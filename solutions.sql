@@ -138,17 +138,13 @@ SELECT
     ct.total_cx,
     cr.estimated_coffee_consumer_in_millions,
     ct.avg_sale_pr_cx,
-    ROUND(
-        cr.estimated_rent::numeric / NULLIF(ct.total_cx::numeric, 0), 2
-    ) AS avg_rent_per_cx
+    ROUND(cr.estimated_rent / NULLIF(ct.total_cx, 0), 2) AS avg_rent_per_cx
 FROM (
     SELECT 
         ci.city_name,
         SUM(s.total) AS total_revenue,
         COUNT(DISTINCT s.customer_id) AS total_cx,
-        ROUND(
-            SUM(s.total)::numeric / NULLIF(COUNT(DISTINCT s.customer_id)::numeric, 0), 2
-        ) AS avg_sale_pr_cx
+        ROUND(SUM(s.total) / COUNT(DISTINCT s.customer_id), 2) AS avg_sale_pr_cx
     FROM sales AS s
     JOIN customers AS c ON s.customer_id = c.customer_id
     JOIN city AS ci ON ci.city_id = c.city_id
