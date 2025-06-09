@@ -50,7 +50,7 @@ select sum(s.total), ci.city_name, count(distinct s.customer_id) as count,
  group by ci.city_name;
 
 --Q5
---PROVIDE A LIST OF CITIES ALON WITH THEIR POPULATION AND ESTIMATED COFFEE CONSUMERS.
+--PROVIDE A LIST OF CITIES ALONG WITH THEIR POPULATION AND ESTIMATED COFFEE CONSUMERS.
 
 select ci.city_name, ci.population, count(distinct s.customer_id),
  ci.population*0.25 as coffee_consumers
@@ -127,3 +127,68 @@ SELECT
 		) as growth_ratio
 
 FROM growth_ratio
+
+--Q8
+--IDENTIFY TOP 3 CITY BASED ON HIGHEST SALES, RETURN CITY NAME, TOTAL SALE,TOTAL RENT, TOTAL CUSTOMERS, ESTIMATED COFFEE CONSUMERS
+
+SELECT 
+    cr.city_name,
+    ct.total_revenue,
+    cr.estimated_rent AS total_rent,
+    ct.total_cx,
+    cr.estimated_coffee_consumer_in_millions,
+    ct.avg_sale_pr_cx,
+    ROUND(
+        cr.estimated_rent::numeric / NULLIF(ct.total_cx::numeric, 0), 2
+    ) AS avg_rent_per_cx
+FROM (
+    SELECT 
+        ci.city_name,
+        SUM(s.total) AS total_revenue,
+        COUNT(DISTINCT s.customer_id) AS total_cx,
+        ROUND(
+            SUM(s.total)::numeric / NULLIF(COUNT(DISTINCT s.customer_id)::numeric, 0), 2
+        ) AS avg_sale_pr_cx
+    FROM sales AS s
+    JOIN customers AS c ON s.customer_id = c.customer_id
+    JOIN city AS ci ON ci.city_id = c.city_id
+    GROUP BY ci.city_name
+) AS ct
+JOIN (
+    SELECT 
+        city_name, 
+        estimated_rent,
+        ROUND((population * 0.25) / 1000000, 3) AS estimated_coffee_consumer_in_millions
+    FROM city
+) AS cr
+ON cr.city_name = ct.city_name
+ORDER BY ct.total_revenue DESC;
+
+SELECT 
+    cr.city_name,
+    ct.total_revenue,
+    cr.estimated_rent AS total_rent,
+    ct.total_cx,
+    cr.estimated_coffee_consumer_in_millions,
+    ct.avg_sale_pr_cx,
+    ROUND(cr.estimated_rent / NULLIF(ct.total_cx, 0), 2) AS avg_rent_per_cx
+FROM (
+    SELECT 
+        ci.city_name,
+        SUM(s.total) AS total_revenue,
+        COUNT(DISTINCT s.customer_id) AS total_cx,
+        ROUND(SUM(s.total) / COUNT(DISTINCT s.customer_id), 2) AS avg_sale_pr_cx
+    FROM sales AS s
+    JOIN customers AS c ON s.customer_id = c.customer_id
+    JOIN city AS ci ON ci.city_id = c.city_id
+    GROUP BY ci.city_name
+) AS ct
+JOIN (
+    SELECT 
+        city_name, 
+        estimated_rent,
+        ROUND((population * 0.25) / 1000000, 3) AS estimated_coffee_consumer_in_millions
+    FROM city
+) AS cr
+ON cr.city_name = ct.city_name
+ORDER BY ct.total_revenue DESC
