@@ -24,7 +24,10 @@ The goal of this project is to analyze the sales data of Coffee Commerce, a comp
 After analyzing the data, the recommended top city for new store opening is:
 
 CHENNAI**
+
 Average rent per customer is very low, 417
+
 Highest total revenue, 908300
+
 Average sales per customer is better at 22153
 
